@@ -1,4 +1,4 @@
-rootProject.name = 'gradle03-multi'
+rootProject.name = 'gradle03-multiple'
 include 'gradle03-subproject01'
 include 'gradle03-subproject02'
 include 'gradle03-subproject03'
