@@ -1,0 +1,8 @@
+task printProperties {
+    doLast {
+        // 获取所有项目属性
+        project.properties.each { prop ->
+            println "${prop.key} : ${prop.value}"
+        }
+    }
+}
