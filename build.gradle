@@ -23,7 +23,8 @@ test {
     useJUnitPlatform()
 }
 
-apply from: 'extra.gradle'
+apply from: 'utils.gradle'
+apply from: 'tasks.gradle'
 
 task "taks1" {
     //任务的配置:配置阶段执行
@@ -216,7 +217,7 @@ tasks.register("task18", Delete) {
     buildDir.deleteDir()
 //    delete(buildDir)
 //    delete(rootProject.buildDir)
-    //删除所有项目的build目录
+    //删除所有项目的build目录, 8.5 版本gralde的 buildDir是getLayout().getBuildDirectory()
     delete(rootProject.allprojects.buildDir)
 }
 
@@ -370,34 +371,150 @@ tasks.register('task29') {
 }
 
 //文件操作
-//使用 Project.file(java.lang.Object)方法，通过指定文件的相对路径或绝对路径来对文件的操作,其中相对路径为相对当前project[根project 或者子project]的目录
-//相对路径, 创建文件
-File configFile = file("src/main/resources/file-operate/conf-realtive.xml")
-configFile.createNewFile()
-//绝对路径, 创建文件
-File configFile2 = file("D:\\JAVA\\javaProject\\Groovy\\gradle03-multiple\\src\\main\\resources\\file-operate\\conf-absolute.xml")
-configFile2.createNewFile()
-//使用java的File类创建文件
-File configFile3 = new File("src/main/resources/file-operate/conf-java.xml")
-configFile3.createNewFile()
+task task30 {
+    //使用 Project.file(java.lang.Object)方法，通过指定文件的相对路径或绝对路径来对文件的操作,其中相对路径为相对当前project[根project 或者子project]的目录
+    //相对路径, 创建文件
+    File configFile = file("src/main/resources/file-operate/conf-realtive.xml")
+    configFile.createNewFile()
+    //绝对路径, 创建文件
+    File configFile2 = file("D:\\JAVA\\javaProject\\Groovy\\gradle03-multiple\\src\\main\\resources\\file-operate\\conf-absolute.xml")
+    configFile2.createNewFile()
+    //使用java的File类创建文件
+    File configFile3 = new File("src/main/resources/file-operate/conf-java.xml")
+    configFile3.createNewFile()
+}
 
 //文件集合
-//文件集合就是一组文件的列表,在Gradle中,文件集合用FileCollection接口表示。我们可以使用 Project.files(java.lang.Object...)方法，
-ConfigurableFileCollection fileCollection = files("src/main/resources/file-operate/conf-collection1.xml", "src/main/resources/file-operate/conf-collection2.xml", "src/main/resources/file-operate/conf-collection3.xml")
-fileCollection.forEach {
-    it.createNewFile()
-    println it.name
+task task31 {
+    doLast {
+        //文件集合就是一组文件的列表,在Gradle中,文件集合用FileCollection接口表示。我们可以使用 Project.files(java.lang.Object...)方法，
+        ConfigurableFileCollection fileCollection = files("src/main/resources/file-operate/conf-collection1.xml", "src/main/resources/file-operate/conf-collection2.xml", "src/main/resources/file-operate/conf-collection3.xml")
+        fileCollection.forEach {
+            it.createNewFile()
+            println it.name
+        }
+
+        Set fileSet1 = fileCollection.files
+        //as关键字可以将一个对象转换为另一个对象,这里将FileCollection转换为Set
+        Set fileSet2 = fileCollection as Set
+        println("检查文件是否存在")
+        for (final def item in fileSet2) {
+            String exist = item.exists() ? "存在" : "不存在"
+            println item.name + "文件:" + exist
+        }
+
+        println("文件集合的操作")
+        def unionFileCollection = fileCollection + files("src/main/resources/file-operate/conf-collection4.xml")
+        println("unionFileCollection:" + unionFileCollection.files.forEach { println it.name })
+        def minusFileCollection = fileCollection - files("src/main/resources/file-operate/conf-collection3.xml")
+        println("minusFileCollection:" + minusFileCollection.files.forEach { println it.name })
+    }
 }
 
-Set fileSet1 = fileCollection.files
-//as关键字可以将一个对象转换为另一个对象,这里将FileCollection转换为Set
-Set fileSet2 = fileCollection as Set
-for (final def item in fileSet2 ) {
-    String exist = item.exists() ? "存在" : "不存在"
-    println item.name + "文件:" + exist
+//文件树的操作
+task 'task32' {
+    doLast {
+        println("文件树的操作")
+        //使用 Project.fileTree(java.lang.Object)方法，通过指定文件的相对路径或绝对路径来对文件的操作,其中相对路径为相对当前project[根project 或者子project]的目录
+        println("通过路径获取文件树")
+        def fileTreeRootPath = "src/main/resources/file-tree-operate"
+        fileTree(fileTreeRootPath).forEach {
+            println it.name
+        }
+        //使用路径创建文件树对象，同时指定包含的文件
+        println("通过路径创建文件树对象，同时指定包含的文件")
+        fileTree(fileTreeRootPath).include("**/*.java").forEach {
+            println it.name
+        }
+
+        //通过闭包创建文件树
+        println("通过闭包创建文件树")
+        fileTree(fileTreeRootPath) {
+            include '**/*.java'
+            exclude('**/a-1.java')
+        }.forEach {
+            println it.name
+        }
+
+        //通过路径和闭包创建文件树：具名参数给map传值
+        println("通过路径和闭包创建文件树")
+        fileTree(dir: fileTreeRootPath, includes: ['**/*.java']).forEach {
+            println it.name
+        }
+    }
 }
 
-def unionFileCollection = fileCollection + files("src/main/resources/file-operate/conf-collection4.xml")
-println("unionFileCollection:" + unionFileCollection.files.forEach { println it })
-def minusFileCollection = fileCollection - files("src/main/resources/file-operate/conf-collection3.xml")
-println("minusFileCollection:" + minusFileCollection.files.forEach { println it })
+//文件拷贝, 如果不写在配置阶段, 会无法执行, 提示: > Task :[任务名] NO-SOURCE
+//不知道为什么, 这个任务只有在执行./gradlew task33时才会执行, 在配置阶段不会执行
+task task33(type: Copy) {
+    //可以是文件,也可以是文件夹,如果是文件夹,只会拷贝文件夹下的文件,不会拷贝这个文件夹
+    from 'src/main/resources/file-tree-operate/a-java'
+    from('src/main/resources/file-tree-operate/a-txt') {
+        exclude '**/a-1.txt'
+    }
+    //重命名文件, 将指定文件重命名为指定的文件名, fileName是一个String
+    rename { String fileName ->
+        fileName.replace('a-2', 'a-2-rename')
+    }
+    from zipTree('src/main/resources/file-tree-operate/a-zip/a-zip.zip')//解压zip文件到into目录
+    into 'src/main/resources/file-generate' //必须是文件夹
+}
+
+//这样写copy任务的话, 类似build, clean这些java插件自带的任务, 会和自带的任务一起执行, 比如clean会执行这个copy任务
+//source_set_tasks说明: https://docs.gradle.org/current/userguide/java_plugin.html#java_source_set_tasks
+task task34 {
+    copy {
+        //可以是文件,也可以是文件夹,如果是文件夹,只会拷贝文件夹下的文件,不会拷贝这个文件夹
+        from 'src/main/resources/file-tree-operate/a-java'
+        from('src/main/resources/file-tree-operate/a-txt') {
+            exclude '**/a-1.txt'
+        }
+        //重命名文件, 将指定文件重命名为指定的文件名, fileName是一个String
+        rename { String fileName ->
+            fileName.replace('a-2', 'a-2-rename')
+        }
+        from zipTree('src/main/resources/file-tree-operate/a-zip/a-zip.zip')//解压zip文件到into目录
+        into 'src/main/resources/file-generate' //必须是文件夹
+        println('task34执行完成')
+    }
+}
+
+//copy {
+//    //可以是文件,也可以是文件夹,如果是文件夹,只会拷贝文件夹下的文件,不会拷贝这个文件夹
+//    from 'src/main/resources/file-tree-operate/a-java'
+//    from('src/main/resources/file-tree-operate/a-txt') {
+//        exclude '**/a-1.txt'
+//    }
+//    //重命名文件, 将指定文件重命名为指定的文件名, fileName是一个String
+//    rename { String fileName ->
+//        fileName.replace('a-2', 'a-2-rename')
+//    }
+//    from zipTree('src/main/resources/file-tree-operate/a-zip/a-zip.zip')//解压zip文件到into目录
+//    into 'src/main/resources/file-generate' //必须是文件夹
+//}
+
+//归档文件
+//ZIP: https://docs.gradle.org/current/dsl/org.gradle.api.tasks.bundling.Zip.html#org.gradle.api.tasks.bundling.Zip
+//Zip，Tar，Jar，War 和Ear 的生成都是通过 ArchiveTask 类来实现的，这些任务都继承自 Copy 类，因此，它们都具有 Copy 类的所有功能。
+task task35(type: Zip) {
+    doLast {
+        from('src/main/resources/file-tree-operate')
+        //into方法没有作用, 最终生成的zip文件会在build/distributions目录下
+        //into('src/main/resources/file-generated')
+        //指定文件夹
+        destinationDirectory = file('src/main/resources/file-archive')
+        //指定文件名称, 默认名称为[archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
+        archiveFileName = 'myZip.zip'
+    }
+}
+
+task task36 {
+    doLast {
+        //通过Project.zipTree(java.lang.Object)方法，将一个zip文件转换为一个文件树
+        //.visit方法遍历文件树,可以获取文件夹的名称,文件的名称, 直接forEach只能获取文件的名称
+        zipTree('src/main/resources/file-archive/myZip.zip').visit {
+            println it.name
+        }
+        //如果压缩包myZip.zip是在项目的build/distributions目录下, 可以直接使用zipTree('myZip.zip')来获取文件树
+    }
+}

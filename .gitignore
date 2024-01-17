@@ -40,3 +40,6 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/src/main/resources/file-generate/
+/src/main/resources/file-archive/
+/src/main/resources/file-operate/
