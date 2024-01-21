@@ -344,16 +344,18 @@ tasks.register('task29') {
 
 //文件操作
 task task30 {
-    //使用 Project.file(java.lang.Object)方法，通过指定文件的相对路径或绝对路径来对文件的操作,其中相对路径为相对当前project[根project 或者子project]的目录
-    //相对路径, 创建文件
-    File configFile = file("src/main/resources/file-operate/conf-realtive.xml")
-    configFile.createNewFile()
-    //绝对路径, 创建文件
-    File configFile2 = file("D:\\JAVA\\javaProject\\Groovy\\gradle03-multiple\\src\\main\\resources\\file-operate\\conf-absolute.xml")
-    configFile2.createNewFile()
-    //使用java的File类创建文件
-    File configFile3 = new File("src/main/resources/file-operate/conf-java.xml")
-    configFile3.createNewFile()
+    doLast {
+        //使用 Project.file(java.lang.Object)方法，通过指定文件的相对路径或绝对路径来对文件的操作,其中相对路径为相对当前project[根project 或者子project]的目录
+        //相对路径, 创建文件
+        File configFile = file("src/main/resources/file-operate/conf-relative.xml")
+        configFile.createNewFile()
+        //绝对路径, 创建文件
+        File configFile2 = file("D:\\JAVA\\javaProject\\Groovy\\gradle03-multiple\\src\\main\\resources\\file-operate\\conf-absolute.xml")
+        configFile2.createNewFile()
+        //使用java的File类创建文件
+        File configFile3 = new File("src/main/resources/file-operate/conf-java.xml")
+        configFile3.createNewFile()
+    }
 }
 
 //文件集合
@@ -432,24 +434,24 @@ task task33(type: Copy) {
     into 'src/main/resources/file-generate' //必须是文件夹
 }
 
-//这样写copy任务的话, 类似build, clean这些java插件自带的任务, 会和自带的任务一起执行, 比如clean会执行这个copy任务
+//这样写copy任务的话, 类似build, clean这些java插件自带的任务, 会和自带的任务一起执行, 比如clean会执行这个copy任务, clean的时候, build目录删除不干净会报错
 //source_set_tasks说明: https://docs.gradle.org/current/userguide/java_plugin.html#java_source_set_tasks
-task task34 {
-    copy {
-        //可以是文件,也可以是文件夹,如果是文件夹,只会拷贝文件夹下的文件,不会拷贝这个文件夹
-        from 'src/main/resources/file-tree-operate/a-java'
-        from('src/main/resources/file-tree-operate/a-txt') {
-            exclude '**/a-1.txt'
-        }
-        //重命名文件, 将指定文件重命名为指定的文件名, fileName是一个String
-        rename { String fileName ->
-            fileName.replace('a-2', 'a-2-rename')
-        }
-        from zipTree('src/main/resources/file-tree-operate/a-zip/a-zip.zip')//解压zip文件到into目录
-        into 'src/main/resources/file-generate' //必须是文件夹
-        println('task34执行完成')
-    }
-}
+//task task34 {
+//    copy {
+//        //可以是文件,也可以是文件夹,如果是文件夹,只会拷贝文件夹下的文件,不会拷贝这个文件夹
+//        from 'src/main/resources/file-tree-operate/a-java'
+//        from('src/main/resources/file-tree-operate/a-txt') {
+//            exclude '**/a-1.txt'
+//        }
+//        //重命名文件, 将指定文件重命名为指定的文件名, fileName是一个String
+//        rename { String fileName ->
+//            fileName.replace('a-2', 'a-2-rename')
+//        }
+//        from zipTree('src/main/resources/file-tree-operate/a-zip/a-zip.zip')//解压zip文件到into目录
+//        into 'src/main/resources/file-generate' //必须是文件夹
+//        println('task34执行完成')
+//    }
+//}
 
 //copy {
 //    //可以是文件,也可以是文件夹,如果是文件夹,只会拷贝文件夹下的文件,不会拷贝这个文件夹

@@ -1,10 +1,10 @@
 package com.self;
 
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MultipleMain {
     public static void main(String[] args) {
         System.out.println("主启动类");
-//        List.of(args).forEach(System.out::println);
     }
 }
