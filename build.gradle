@@ -26,17 +26,41 @@ dependencies {
     //2.配置某文件夹作为依赖项, 文件树的形式
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //3.直接依赖,简写
-//    implementation 'org.apache.logging.log4j:log4j:2.22.0'
+    implementation 'org.apache.logging.log4j:log4j:2.22.0'
     //3.直接依赖,完整写法
     //implementation group: 'org.apache.logging.log4j', name: 'log4j', version: '2.22.0'
     implementation 'org.projectlombok:lombok:1.18.30'
-    implementation 'org.apache.logging.log4j:log4j-core:2.22.0'
+//    implementation('org.hibernate:hibernate-core:3.6.3.Final') {
+//        //排除某一个库(slf4j)依赖:如下三种写法都行
+//        exclude group: 'org.slf4j'
+//        exclude module: 'slf4j-api'
+//        exclude group: 'org.slf4j', module: 'slf4j-api'
+//    }
+//    implementation('org.hibernate:hibernate-core:3.6.3.Final') {
+//        //不使用传递性依赖, 只引入当前依赖, 不引入当前依赖的依赖, 不推荐使用
+//        transitive = false
+//    }
+    implementation('org.slf4j:slf4j-api:+')
+    //使用最新版本的依赖, 或者写成: implementation('org.slf4j:slf4j-api:latest.release')//或者是latest.integration
+    implementation('org.hibernate:hibernate-core:3.6.3.Final')
+
+    // Log4j2 API and Core
+//    implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
+//    implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
+
+    // Bridge SLF4J API calls to Log4j2
+//    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
 }
 
 test {
     useJUnitPlatform()
 }
 
+//configurations.all() {
+//    Configuration configuration ->
+//        //当遇到版本冲突时直接构建失败
+//        configuration.resolutionStrategy.failOnVersionConflict()
+//}
 apply from: 'utils.gradle'
 apply from: 'tasks.gradle'
 
