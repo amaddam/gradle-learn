@@ -1,0 +1,90 @@
+plugins {
+    //插件添加了对 Groovy 语言的支持，允许你用 Groovy 编写项目的构建逻辑，包括自定义的任务、插件等。
+    id 'groovy'
+    //插件提供了一系列用于开发 Gradle 插件的便利功能，包括自动应用 java 插件、设置插件的元数据、以及简化插件的打包和发布过程。
+    //如果你正在开发一个 Gradle 插件，这个插件会帮助你正确地设置项目结构和生成所需的插件描述文件(META-INF/gradle-plugins/*.properties)。它确保插件按照 Gradle 的要求被打包和识别。
+    id 'java-gradle-plugin'
+    //插件添加了对 Maven Publish 插件的支持，允许你发布构建产物到 Maven 仓库。
+    id 'maven-publish'
+}
+
+dependencies {
+    //这个依赖项提供了 Gradle API 的访问，允许你在插件或构建脚本中使用 Gradle 自身的类和方法。
+    implementation gradleApi() //必须
+    //这个依赖项提供了对本地 Groovy 环境的支持，它包含了运行 Groovy 代码所需的库。
+    implementation localGroovy() //必须
+}
+
+repositories {
+    google()
+    mavenCentral() //必须
+}
+//把项目入口设置为src/main/groovy(可以不写)
+//https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceSet.html
+//sourceSets {
+//    main {
+//        groovy {
+//            srcDir 'src/main/groovy'
+//        }
+//    }
+//}
+
+
+gradlePlugin {
+    plugins {
+        pluginD {
+            //插件的 ID，用于在项目中应用插件
+            id = 'com.self.custom-plugin-d'
+            //插件的实现类，用于在项目中应用插件
+            implementationClass = 'com.self.CustomPluginD'
+        }
+    }
+}
+
+//可以看idea的gradle目录, 在当前项目的publishing下, 根据定义的名称 myPluginPublishA
+// 生成了 publishMyPluginPublishAPublicationToMavenRepository...等与myPluginPublishA名称相关的任务
+publishing {
+    publications {""
+        //发布插件的myPluginPublish可以自定义
+        myLibrary(MavenPublication) {
+            from components.java//发布jar包
+//            from components.web///引入war插件，发布war包
+            //插件的坐标信息
+            groupId = 'com.self' //指定GAV坐标信息
+            artifactId = 'library'
+            version = '1.1'
+
+        }
+
+        //可以定义多个发布任务, 比如有的是发布jar包, 有的是发布war包
+        //注意GAV坐标信息不能重复
+//        myPluginPublishB(MavenPublication) {
+//            //插件的坐标信息
+//            groupId = 'com.self' //指定GAV坐标信息
+//            artifactId = 'library'
+//            version = '1.0'
+////            from components.java//发布jar包
+//            from components.web///引入war插件，发布war包
+//        }
+    }
+
+    repositories {
+        //如果不指定url,则默认发布到本地仓库,在~/.m2/repository/目录下
+        //使用publishToMavenLocal任务也是发布到本地仓库
+        //现在是在当前项目下的lib/release目录下
+        maven { url "$rootDir/lib/release" }
+//发布项目到私服中
+//        maven {
+//            name = 'myRepo' //name属性可选,表示仓库名称，url必填
+//            //发布地址:可以是本地仓库或者maven私服
+//            //url = layout.buildDirectory.dir("repo")
+//            //url='http://my.org/repo'
+//            // change URLs to point to your repos, e.g. http://my.org/repo
+//            //认证信息:用户名和密码
+//            credentials {
+//                username = 'joe'
+//                password = 'secret'
+//            }
+//        }
+    }
+}

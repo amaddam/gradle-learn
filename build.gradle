@@ -1,19 +1,56 @@
+//buildscript {
+//    repositories {
+//        maven {
+//            url = uri("https://plugins.gradle.org/m2/")
+//        }
+//    }
+//    dependencies {
+//        classpath("org.barfuin.gradle.taskinfo:gradle-taskinfo:2.1.0")
+//    }
+//}
+//plugins {
+//    id("org.barfuin.gradle.taskinfo") version "2.1.0"
+//}
+
+//本地的插件依赖和仓库, 只能将仓库和依赖地址写入到buildscript中, 否则会报错
+buildscript {
+    repositories {
+        maven { url "$rootDir/lib/release" }
+    }
+    dependencies {
+        classpath "com.self:library:1.1"
+    }
+}
+
+
 // -*- coding: utf-8 -*-
+
 plugins {
     id 'java'
     id 'application'
     id 'java-library'
+    id 'groovy'
 }
+//本地插件依赖, 只能以apply plugin的方式引入, 否则会报错
+apply plugin: 'com.self.custom-plugin-d'
+apply plugin: 'com.self.custom-plugin-e'
 
 'com.self'
 version '1.0-SNAPSHOT'
 
-
 repositories {
     mavenCentral()
 }
+println 'reportDir is ' + reportsDir
+//reportDir是在java插件中定义的, 用于存放测试报告
 
-mainClassName = 'com.self.MultipleMain'
+//apply plugin:   'com.self.custom-plugin-e'
+
+//'com.self'
+//version '1.0-SNAPSHOT'
+
+
+//mainClassName = 'com.self.MultipleMain'
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
@@ -63,4 +100,47 @@ test {
 //}
 apply from: 'utils.gradle'
 apply from: 'tasks.gradle'
+
+class GreetingPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.task('plugin1') {
+            doLast {
+                println 'Hello from the GreetingPlugin'
+            }
+        }
+    }
+}
+
+
+// 通过gradle plugin1执行
+apply plugin: GreetingPlugin
+
+
+interface GreetingPluginExtension {
+    Property<String> getMessage()
+
+    Property<String> getGreeter()
+}
+
+class GreetingPlugin1 implements Plugin<Project> {
+    void apply(Project project) {
+        // 添加新的扩展到扩展容器中, 名称为plugin2container, 类型为GreetingPluginExtension
+        // 还有一个可变参数constructionArguments: 用于构造扩展实例的参数。这是一个可变参数列表，允许在创建扩展实例时传入构造函数所需的参数。
+        def extension = project.extensions.create('plugin2container', GreetingPluginExtension)
+        project.task('plugin2') {
+            doLast {
+                // 通过扩展容器获取扩展实例
+                println "${extension.message.get()} from ${extension.greeter.get()}"
+            }
+        }
+    }
+}
+
+apply plugin: GreetingPlugin1
+
+// 配置扩展的值
+plugin2container {
+    message = 'Hi'
+    greeter = 'Gradle'
+}
 

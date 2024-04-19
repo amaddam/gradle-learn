@@ -1,0 +1,9 @@
+ext {
+    company = "self"
+    compileSdkVersion = [
+            compileSdkVersion: JavaVersion.VERSION_21
+    ]
+    spring = [
+            version: '5'
+    ]
+}
