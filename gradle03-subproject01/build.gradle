@@ -22,3 +22,8 @@ test {
 task("task3"){
     println "task subproject01"
 }
+
+task "task4" {
+    //尝试读取父工程的ext中定义的扩展属性company
+    println "access parent project ext.company: " + project.parent.ext.company
+}

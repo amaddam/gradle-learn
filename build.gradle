@@ -30,6 +30,7 @@ plugins {
     id 'application'
     id 'java-library'
     id 'groovy'
+    id 'maven-publish'
 }
 //本地插件依赖, 只能以apply plugin的方式引入, 否则会报错
 apply plugin: 'com.self.custom-plugin-d'
@@ -39,9 +40,10 @@ apply plugin: 'com.self.custom-plugin-e'
 version '1.0-SNAPSHOT'
 
 repositories {
+    //导入依赖时, 会先从本地gradle缓存中查找, 如果没有再从配置的仓库中依次向下查找
     mavenCentral()
 }
-println 'reportDir is ' + reportsDir
+println 'reportDir is ' + reportsDir//或者也可以写成: println "reportDir is ${reportsDir}"
 //reportDir是在java插件中定义的, 用于存放测试报告
 
 //apply plugin:   'com.self.custom-plugin-e'
@@ -100,6 +102,7 @@ test {
 //}
 apply from: 'utils.gradle'
 apply from: 'tasks.gradle'
+apply from: 'vision.gradle'
 
 class GreetingPlugin implements Plugin<Project> {
     void apply(Project project) {
@@ -142,5 +145,72 @@ apply plugin: GreetingPlugin1
 plugin2container {
     message = 'Hi'
     greeter = 'Gradle'
+}
+
+//会在所有项目中创建task37
+allprojects {
+    tasks.register('task37') {
+        println "task37 from the ${project.name} allproject"
+    }
+}
+
+//只会在子项目中创建task38
+subprojects {
+    tasks.register('task38') {
+        println "task38 from the ${project.name} subproject"
+    }
+}
+
+//只会在gradle03-subproject01子项目中创建task39, 项目名称必须再settings.gradle中定义
+project(':gradle03-subproject01') {
+    //需要先使用apply plugin的方式引入插件, 否则会报错, 不支持plugins{}的方式
+    apply plugin: 'java'
+    //可以在指定的子项目中引入插件
+    dependencies {
+        implementation 'org.projectlombok:lombok:1.18.30'
+    }
+    //也可以指定一些其他的配置
+    tasks.register('task39') {
+        println "task39 from the ${project.name} subproject"
+    }
+}
+
+
+//带源码和javadoc的发布:需要'java-library'插件支持:它是java的升级版，java插件的功能java-library都有
+javadoc.options.encoding = "UTF-8"
+java {
+    //发布jar包时, 会自动发布javadoc
+    withJavadocJar()
+    //发布jar包时, 会自动发布源码
+    withSourcesJar()
+}
+publishing {
+    publications {
+        myLibrary(MavenPublication) {
+            groupId = 'com.self.sample' //指定GAV坐标信息
+            artifactId = 'library'
+            version = '1.1'
+            from components.java//发布jar包
+//            from components.web///引入war插件，发布war包
+        }
+    }
+    repositories {
+        //本地仓库位于USER_HOME/.m2/repository mavenLocal()
+        // 发布项目到私服中
+        maven {
+            name = 'myRepo' //name属性可选,表示仓库名称，url必填
+            // 发布地址:可以是本地仓库或者maven私服
+            // url = layout.buildDirectory.dir("repo")
+            // change URLs to point to your repos, e.g. http://my.org/repo
+            def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
+            def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            //认证信息:用户名和密码
+            //credentials {
+            //    username = 'joe'
+            //    password = 'secret'
+            //}
+        }
+    }
 }
 
