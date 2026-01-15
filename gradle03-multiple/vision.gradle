@@ -1,0 +1,10 @@
+//可以在ext中定义一些属性，供所有子工程使用
+ext {
+    company = "self"
+    compileSdkVersion = [
+            compileSdkVersion: JavaVersion.VERSION_21
+    ]
+    spring = [
+            version: '5'
+    ]
+}

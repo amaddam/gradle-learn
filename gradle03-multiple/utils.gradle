@@ -1,0 +1,21 @@
+task printProperties {
+    doLast {
+        // 获取所有项目属性
+        project.properties.each { prop ->
+            println "${prop.key} : ${prop.value}"
+        }
+    }
+}
+
+task cleanGeneratedFiles(type: Delete) {
+    // 删除src/main/resources/file-generate下的所有生成的文件和文件夹\
+    //在dolast中执行，保证在所有任务执行完毕后再执行
+    doLast {
+        file('src/main/resources/file-generate').listFiles().each { file ->
+            delete file
+        }
+        file('src/main/resources/file-archive').listFiles().each { file ->
+            delete file
+        }
+    }
+}

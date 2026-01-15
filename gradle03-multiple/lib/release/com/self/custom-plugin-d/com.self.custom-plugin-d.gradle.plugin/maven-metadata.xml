@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.self.custom-plugin-d</groupId>
+  <artifactId>com.self.custom-plugin-d.gradle.plugin</artifactId>
+  <versioning>
+    <latest>unspecified</latest>
+    <release>unspecified</release>
+    <versions>
+      <version>unspecified</version>
+    </versions>
+    <lastUpdated>20240418185552</lastUpdated>
+  </versioning>
+</metadata>

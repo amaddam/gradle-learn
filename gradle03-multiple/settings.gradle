@@ -1,0 +1,127 @@
+rootProject.name = 'gradle03-multi'
+include 'gradle03-subproject01'
+include 'gradle03-subproject02'
+include 'gradle03-subproject03'
+include 'gradle03-plugin-publish'
+
+
+//init phase
+gradle.settingsEvaluated { //1.settingsEvaluated钩子函数,在初始化阶段完成
+    println "settingsEvaluated"
+}
+gradle.projectsLoaded { //2.projectsLoaded钩子函数,在初始化阶段完成
+    println "projectsLoaded"
+}
+
+//configuration phase
+//声明一个变量：表示当前项目名,在每次执行某个项目的beforeEvaluate方法时先给projectName变量赋值
+//这样方便在：gradle.beforeProject和afterProject两个钩子函数使用。
+def projectName = ""
+gradle.addProjectEvaluationListener(new ProjectEvaluationListener() {
+//3.执行各个project的beforeEvaluate：在配置阶段完成
+    @Override
+    void beforeEvaluate(Project project) {
+        projectName = project.name
+        println "${project.name} Project beforeEvaluate"
+    }
+//5.执行各个project的afterEvaluate：在配置阶段完成
+    @Override
+    void afterEvaluate(Project project, ProjectState projectState) {
+        println "${project.name} Project afterEvaluate"
+    }
+});
+gradle.beforeProject {//4.执行各个project的beforeProject：在配置阶段完成
+    println "${projectName} beforeProject..."
+}
+gradle.afterProject {//6.执行各个project的afterProject：在配置阶段完成
+    println "${projectName} afterProject..."
+}
+//7.所有工程的 build.gradle 执行完毕后，回调 Gradle 对象的 projectsEvaluated 方法：在配置阶段完成
+def rootProjectName = rootProject.getName()
+gradle.projectsEvaluated {
+    println "${rootProjectName} projectsEvaluated..."
+}
+//8.配置阶段完毕后，回调 TaskExecutionGraph 对象的 whenReady 方法：在配置阶段完成
+gradle.taskGraph.whenReady {
+    println "${rootProjectName} taskGraph whenReady..."
+}
+
+
+//executing phase
+//9.在当前Task执行之前,会回调 TaskExecutionGraph 对象的 beforeTask方法：在执行阶段完成
+gradle.taskGraph.beforeTask { task ->
+    println "this is the task ${task.name} of the project ${task.getProject().name} beforeTask.."
+}
+//10.在当前Task执行之后,会回调 TaskExecutionGraph 对象的 afterTask方法：在执行阶段完成
+gradle.taskGraph.afterTask { task ->
+    println "this is the task ${task.name} of the project ${task.getProject().name}  afterTask.."
+}
+//11.当所有的 Task 执行完毕后，会回调 Gradle 对象的 buildFinish 方法：在执行阶段完成
+gradle.buildFinished {
+    println "${rootProjectName} buildFinished..."
+}
+
+
+//def projectName=rootProject.getName() //定义项目名
+long beginOfSetting = System.currentTimeMillis() //初始化阶段开始时间
+def beginOfConfig // 配置阶段开始时间
+def configHasBegin = false //配置阶段是否开始了，只执行一次
+def beginOfProjectConfig = new HashMap() //存放每个build.gradle 执行之前的时间
+def beginOfTaskExecute // 执行阶段开始时间
+gradle.projectsLoaded { // 初始化阶段执行完毕
+    println "${projectName} project, total initialization time   ${System.currentTimeMillis() - beginOfSetting} ms"
+}
+//build.gradle 执行前
+gradle.beforeProject { Project project ->
+    if (!configHasBegin) {
+        configHasBegin = true
+        beginOfConfig = System.currentTimeMillis()
+    }
+    beginOfProjectConfig.put(project, System.currentTimeMillis())
+}
+//build.gradle 执行后
+gradle.afterProject { Project project ->
+    def begin = beginOfProjectConfig.get(project)
+    if (project.name == projectName) {
+        // 打印根项目的配置阶段耗时
+        println "Root project: ${projectName} configuration phase time consuming: ${System.currentTimeMillis() - begin} ms"
+    } else {
+        // 打印子项目的配置阶段耗时
+        println "Sub project: ${project.name} configuration phase time consuming: ${System.currentTimeMillis() - begin} ms"
+    }
+}
+gradle.taskGraph.whenReady {//配置阶段完毕
+    // 打印整个配置阶段耗时
+    println "The whole ${projectName} configuration phase time consuming：${System.currentTimeMillis() - beginOfConfig} ms"
+    beginOfTaskExecute = System.currentTimeMillis()
+}
+//执行阶段开始
+gradle.taskGraph.beforeTask { Task task ->
+    task.doFirst {
+        task.ext.beginOfTask = System.currentTimeMillis()
+    }
+    task.doLast {
+        // 打印每个task的执行阶段耗时
+        println "${task.name} implementation phase is time-consuming: ${System.currentTimeMillis() - task.ext.beginOfTask} ms"
+    }
+}
+
+gradle.buildFinished {//执行阶段完毕
+    // 打印整个执行阶段耗时
+    println "Total time spent in the execution phase: ${System.currentTimeMillis() - beginOfTaskExecute} ms"
+    // 打印整个构建过程耗时
+    println "The whole build process is time consuming: ${System.currentTimeMillis() - beginOfSetting} ms"
+}
+
+gradle.taskGraph.addTaskExecutionGraphListener(new TaskExecutionGraphListener() {
+    @Override
+    // 生成有向无环图
+    void graphPopulated(TaskExecutionGraph taskExecutionGraph) {
+        println("TaskExecutionGraphListener graphPopulated")
+        taskExecutionGraph.allTasks.forEach(task -> {//核心逻辑:通过taskExecutionGraph获得所有的task
+            taskExecutionGraph.allTasks.forEach(releaseTask -> {
+                println releaseTask.getProject().name + ":" + releaseTask.name
+            })
+        })
+    }
+})
