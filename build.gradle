@@ -49,8 +49,25 @@ dependencies {
     implementation 'jstl:jstl:1.2'
     //servlet-api这个不需要额外引入，tomcat会提供
     compileOnly 'javax.servlet:servlet-api:2.5'
+    //junit4
     testImplementation group: 'junit', name: 'junit', version: '4.13.1'
+    //junit5
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
+//junit4和junit5只能使用一个出测试报告
+//junit4
+//test {
+//    useJUnit()
+//}
+//junit5
+test {
+//    setEnabled(false)//关闭测试
+    useJUnitPlatform()//使用junit5
+    include("**/test1/**")//只执行test1包下的测试类
+    exclude("**/*Test2.class")//排除Test2结尾的测试类
+}
+
 gretty {
     httpPort = 8888         //servlet容器启动端口号
     contextPath = "/web"    //项目路径
