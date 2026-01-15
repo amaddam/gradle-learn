@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+    //web应用
+    id 'war'
+    id 'org.gretty' version '2.2.0'
+}
+
+group 'com.self'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    //spring
+    implementation 'org.springframework:spring-beans:5.2.22.RELEASE'
+    implementation 'org.springframework:spring-web:5.2.24.RELEASE'
+    implementation 'org.springframework:spring-webmvc:5.2.24.RELEASE'
+    implementation 'org.springframework:spring-tx:5.2.23.RELEASE'
+    implementation 'org.springframework:spring-test:5.2.24.RELEASE'
+    implementation 'org.springframework:spring-jdbc:5.2.24.RELEASE'
+
+
+    //mybatis
+//    implementation 'org.mybatis:mybatis-spring:1.2.3'
+//    implementation 'org.mybatis:mybatis:3.3.0'
+    implementation 'org.mybatis:mybatis-spring:2.0.6'
+    implementation 'org.mybatis:mybatis:3.5.7'
+
+    //数据库与连接池
+    implementation 'mysql:mysql-connector-java:8.0.32'
+    implementation 'com.alibaba:druid:1.2.17'
+
+    //json
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.14.2"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.14.2"
+
+    //aop
+    implementation 'org.aspectj:aspectjweaver:1.8.6'
+    //日志，slf4j的实现
+//    implementation 'log4j:log4j:1.2.17'
+    implementation 'org.slf4j:slf4j-log4j12:2.0.7'
+    //日志规范接口，不同的日志框架都实现了这个接口
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    //jstl标签库
+    implementation 'jstl:jstl:1.2'
+    //servlet-api这个不需要额外引入，tomcat会提供
+    compileOnly 'javax.servlet:servlet-api:2.5'
+    //junit4
+    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
+    //junit5
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+}
+//junit4和junit5只能使用一个出测试报告
+//junit4
+//test {
+//    useJUnit()
+//}
+//junit5
+test {
+//    setEnabled(false)//关闭测试
+    useJUnitPlatform()//使用junit5
+    include("**/test1/**")//只执行test1包下的测试类
+    exclude("**/*Test2.class")//排除Test2结尾的测试类
+}
+
+gretty {
+    httpPort = 8888         //servlet容器启动端口号
+    contextPath = "/web"    //项目路径
+    debugPort = 5005        // default 调试端口号
+    debugSuspend = true     // default 支持debug调试
+    httpsEnabled = true     //支持https协议
+    managedClassReload = true // 修改了类之后重新加载
+    //servletContainer = 'tomcat9' //如果不指定默认的servlet容器，支持tomcat7/8，默认是使用的是Jetty服务器
+    httpsPort = 4431
+}
