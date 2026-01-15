@@ -1,0 +1,10 @@
+rootProject.name = 'gradle04-microservice'
+include 'gradle04-microservice-bean'
+include 'gradle04-microservice-common'
+include 'gradle04-microservice-gateway'
+include 'gradle04-microservice-service'
+include 'gradle04-microservice-service:service-order'
+findProject(':gradle04-microservice-service:service-order')?.name = 'service-order'
+include 'gradle04-microservice-service:service-user'
+findProject(':gradle04-microservice-service:service-user')?.name = 'service-user'
+

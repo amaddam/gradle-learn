@@ -1,0 +1,21 @@
+// 依赖版本管理
+ext {
+    version = [
+            "fastjsonVersion": "1.2.72",
+            "mybatisPlus"    : "3.0.5",
+            "postgres"       : "42.7.3",
+            "swaggerVersion" : "2.7.0",
+            "jjwtVersion"    : "0.7.0"
+    ]
+
+    dependencies = [
+            //键值对, 键可以自定义, 值是依赖的坐标,
+            //主要用于在 Gradle 脚本中引用依赖。这些键本身在 Gradle 的配置中并没有实际作用，而是为了在脚本中引用或应用依赖时提供方便。
+            "fastjson"                 : "com.alibaba:fastjson:${version.fastjsonVersion}",
+            "mybatis-plus-boot-starter": "com.baomidou:mybatis-plus-boot-starter:${version.mybatisPlus}",
+            "postgres"                 : "org.postgresql:postgresql:${version.postgres}",
+            "swagger"                  : "io.springfox:springfox-swagger2:${version.swaggerVersion}",
+            "swaggerUI"                : "io.springfox:springfox-swagger-ui:${version.swaggerVersion}",
+            "jjwt"                     : "io.jsonwebtoken:jjwt:${version.jjwtVersion}"
+    ]
+}
